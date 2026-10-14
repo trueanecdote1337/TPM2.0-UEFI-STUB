@@ -1,0 +1,48 @@
+#ifndef VTPM_CORE_PROBE_H_
+#define VTPM_CORE_PROBE_H_
+#include <Base.h>
+
+#define VTPM_CORE_TEST_MARSHAL  BIT0
+#define VTPM_CORE_TEST_BOUNDS   BIT1
+#define VTPM_CORE_TEST_PROFILE BIT2
+#define VTPM_CORE_TEST_SHA256  BIT3
+#define VTPM_CORE_TEST_AES128  BIT4
+#define VTPM_CORE_TEST_ALL     (BIT0 | BIT1 | BIT2 | BIT3 | BIT4)
+
+#define VTPM_NV_TEST_ERASE      BIT0
+#define VTPM_NV_TEST_READ_WRITE BIT1
+#define VTPM_NV_TEST_OVERLAP    BIT2
+#define VTPM_NV_TEST_BOUNDS     BIT3
+#define VTPM_NV_TEST_LIFECYCLE  BIT4
+#define VTPM_NV_TEST_ALL        (BIT0 | BIT1 | BIT2 | BIT3 | BIT4)
+
+// Destructive RAM-NV probe; run only before manufacture and command execution.
+UINT32 EFIAPI VtpmNvSmokeTest (VOID);
+
+#define VTPM_ENTROPY_TEST_INIT    BIT0
+#define VTPM_ENTROPY_TEST_SHORT   BIT1
+#define VTPM_ENTROPY_TEST_PARTIAL BIT2
+#define VTPM_ENTROPY_TEST_REPEAT  BIT3
+#define VTPM_ENTROPY_TEST_ALL     (BIT0 | BIT1 | BIT2 | BIT3)
+UINT32 EFIAPI VtpmEntropySmokeTest (VOID);
+
+#define VTPM_CLOCK_TEST_FLAGS     BIT0
+#define VTPM_CLOCK_TEST_ADVANCE   BIT1
+#define VTPM_CLOCK_TEST_MONOTONIC BIT2
+#define VTPM_CLOCK_TEST_RESTART   BIT3
+#define VTPM_CLOCK_TEST_RATE      BIT4
+#define VTPM_CLOCK_TEST_ALL       (BIT0 | BIT1 | BIT2 | BIT3 | BIT4)
+UINT32 EFIAPI VtpmClockSmokeTest (VOID);
+
+#define VTPM_PLATFORM_TEST_INFO        BIT0
+#define VTPM_PLATFORM_TEST_PCR_PROFILE BIT1
+#define VTPM_PLATFORM_TEST_PCR_VALUES  BIT2
+#define VTPM_PLATFORM_TEST_PCR_BOUNDS  BIT3
+#define VTPM_PLATFORM_TEST_SIGNALS     BIT4
+#define VTPM_PLATFORM_TEST_ALL         (BIT0 | BIT1 | BIT2 | BIT3 | BIT4)
+UINT32 EFIAPI VtpmPlatformSmokeTest (VOID);
+
+// Core smoke checks only: no TPM manufacture or command execution yet.
+UINT32 EFIAPI VtpmCoreSmokeTest (VOID);
+
+#endif

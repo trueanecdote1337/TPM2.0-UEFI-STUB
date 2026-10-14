@@ -1,0 +1,45 @@
+[Defines]
+  INF_VERSION    = 0x00010005
+  BASE_NAME      = VtpmProbeDxe
+  FILE_GUID      = D0AEB57B-EA78-46D0-BA43-97162ECA0D79
+  MODULE_TYPE    = DXE_DRIVER
+  VERSION_STRING = 1.0
+  ENTRY_POINT    = VtpmProbeDxeEntryPoint
+
+[Sources]
+  VtpmProbeDxe.c
+  VtpmWindowsDxe.c
+  VtpmWindows.hex
+  VtpmFullProbeDxe.c
+  VtpmControlProbeDxe.c
+  VtpmControl.h
+  VtpmCrbProbeDxe.c
+  VtpmCrb.h
+  VtpmProbe.h
+  VtpmRuntimeProbe.hex
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MyTpm2EMU/TpmCoreLib/TpmCorePkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  BaseMemoryLib
+  DebugLib
+  IoLib
+  BaseLib
+  TimerLib
+
+[Protocols]
+  gEfiSmmCommunicationProtocolGuid
+  gEfiSmmControl2ProtocolGuid
+  gEfiAcpiTableProtocolGuid
+
+[Guids]
+  gEfiAcpi20TableGuid
+  gEfiAcpi10TableGuid
+  gEfiEventReadyToBootGuid
+
+[Depex]
+  gEfiSmmCommunicationProtocolGuid AND gEfiAcpiTableProtocolGuid

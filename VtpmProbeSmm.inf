@@ -1,0 +1,44 @@
+[Defines]
+  INF_VERSION              = 0x00010005
+  BASE_NAME                = VtpmProbeSmm
+  FILE_GUID                = 01E13C15-0A94-4E42-A983-4B52B91D138A
+  MODULE_TYPE              = DXE_SMM_DRIVER
+  VERSION_STRING           = 1.0
+  PI_SPECIFICATION_VERSION = 0x0001000A
+  ENTRY_POINT              = VtpmProbeSmmEntryPoint
+
+[Sources]
+  VtpmProbeSmm.c
+  VtpmTimerSmm.c
+  VtpmControlSmm.c
+  VtpmControl.h
+  VtpmCrbSmm.c
+  VtpmCrb.h
+  VtpmProbe.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+  UefiCpuPkg/UefiCpuPkg.dec
+  MyTpm2EMU/TpmCoreLib/TpmCorePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  SmmServicesTableLib
+  SmmMemLib
+  BaseMemoryLib
+  DebugLib
+  IoLib
+  SynchronizationLib
+  PciLib
+  PcdLib
+
+[Protocols]
+  gVtpmCoreSmmProtocolGuid
+  gEdkiiSmmExitBootServicesProtocolGuid
+
+[Depex]
+  TRUE
+
+[Pcd]
+  gUefiCpuPkgTokenSpaceGuid.PcdCpuSmmSyncMode

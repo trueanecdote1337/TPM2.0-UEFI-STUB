@@ -1,0 +1,28 @@
+[Defines]
+  INF_VERSION              = 0x00010005
+  BASE_NAME                = TpmCoreProbeSmm
+  FILE_GUID                = DE0A6E8F-5940-450D-AE89-05E2859627E4
+  MODULE_TYPE              = DXE_SMM_DRIVER
+  VERSION_STRING           = 0.1
+  PI_SPECIFICATION_VERSION = 0x0001000A
+  ENTRY_POINT              = TpmCoreProbeSmmEntryPoint
+
+[Sources]
+  TpmCoreProbeSmm.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MyTpm2EMU/TpmCoreLib/TpmCorePkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  BaseLib
+  SmmServicesTableLib
+  DebugLib
+  TpmCoreLib
+
+[Protocols]
+  gVtpmCoreSmmProtocolGuid
+
+[Depex]
+  TRUE

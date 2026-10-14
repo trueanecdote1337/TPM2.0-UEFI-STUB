@@ -1,0 +1,28 @@
+[Defines]
+  DEC_SPECIFICATION = 0x00010005
+  PACKAGE_NAME = VtpmCorePkg
+  PACKAGE_GUID = 55A0B80B-99BB-4A32-B65E-7F972CD8E839
+  PACKAGE_VERSION = 0.1
+
+[Includes]
+  Include
+  Config
+  Compat
+  EdkHeaders/Crt
+  EdkHeaders/OpenSsl
+  Vendor/tpm/include
+  Vendor/tpm/include/public
+  Vendor/tpm/include/private
+  Vendor/tpm/include/private/prototypes
+  Vendor/tpm/include/platform_interface
+  Vendor/tpm/include/platform_interface/prototypes
+  Vendor/tpm/cryptolibs/common/include
+  Vendor/tpm/cryptolibs/Ossl/include
+  Vendor/tpm/cryptolibs/TpmBigNum
+  Vendor/tpm/cryptolibs/TpmBigNum/include
+
+[LibraryClasses]
+  TpmCoreLib|Include/TpmCoreProbe.h
+
+[Protocols]
+  gVtpmCoreSmmProtocolGuid = { 0x8bf46af1, 0x97c1, 0x4b6c, { 0xa9, 0xa2, 0x66, 0x61, 0x20, 0x84, 0xae, 0x73 } }

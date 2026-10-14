@@ -1,0 +1,29 @@
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = VtpmDriver
+  FILE_GUID                      = 12345678-ABCD-1234-8765-123456789ABC
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = VtpmDriverEntryPoint
+
+[Sources]
+  tpmdriver.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  SecurityPkg/SecurityPkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  DebugLib
+  BaseLib
+  BaseMemoryLib
+
+[Protocols]
+  gEfiAcpiTableProtocolGuid      
+  gEfiTcg2ProtocolGuid            
+
+[Depex]
+  gEfiAcpiTableProtocolGuid
