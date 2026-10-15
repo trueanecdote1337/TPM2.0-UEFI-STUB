@@ -31,7 +31,9 @@ result = subprocess.run(['acpiexec', '-b',
     r'execute \_SB.VPRB._INI; execute \_SB.VPRB.VTCM; evaluate \_SB.VPRB.TREQ',
     str(base / 'VtpmRuntimeProbe.aml')], capture_output=True, text=True, timeout=15)
 output = result.stdout + result.stderr
-(base / 'Tests/acpi-mailbox.log').write_text(output)
+log_dir = base / 'artifacts/tests'
+log_dir.mkdir(parents=True, exist_ok=True)
+(log_dir / 'acpi-mailbox.log').write_text(output)
 assert result.returncode == 0, output
 assert 'ACPI Error' not in output and 'ACPI Exception' not in output, output
 assert '[Buffer] Length 40' in output, output  # 0x40 bytes, despite ByteAcc

@@ -1,0 +1,4 @@
+# The image builds the toolchain, not the project sources.
+**
+!scripts/
+!scripts/Dockerfile

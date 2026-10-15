@@ -1,0 +1,20 @@
+# Local output; generated AML/HEX files used by the firmware stay tracked.
+/artifacts/
+/build/
+/Build/
+/edk2/
+__pycache__/
+*.py[cod]
+*.log
+*.fd
+*.img
+*.qcow2
+*.iso
+*.rom
+*.aml.lst
+*.lst
+*.map
+*.o
+*.obj
+*.efi
+*.dll

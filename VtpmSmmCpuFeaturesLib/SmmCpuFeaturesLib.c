@@ -195,42 +195,10 @@ SmmCpuFeaturesSmmRelocationComplete (
   VOID
   )
 {
-  EFI_STATUS Status;
-  UINTN      MapPagesBase;
-  UINTN      MapPagesCount;
+  // Match the pinned EDK II 2018 OVMF hook (a no-op). The imported copy had
+  // a later SEV save-state re-encryption API absent from that baseline.
+  // SEV is not a validated configuration for this firmware TPM port.
 
-  if (!MemEncryptSevIsEnabled ()) {
-    return;
-  }
-
-  //
-  // Now that SMBASE relocation is complete, re-encrypt the original SMRAM save
-  // state map's container pages, and release the pages to DXE. (The pages were
-  // allocated in PlatformPei.)
-  //
-  Status = MemEncryptSevLocateInitialSmramSaveStateMapPages (
-             &MapPagesBase,
-             &MapPagesCount
-             );
-  ASSERT_EFI_ERROR (Status);
-
-  Status = MemEncryptSevSetPageEncMask (
-             0,             // Cr3BaseAddress -- use current CR3
-             MapPagesBase,  // BaseAddress
-             MapPagesCount, // NumPages
-             TRUE           // Flush
-             );
-  if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "%a: MemEncryptSevSetPageEncMask(): %r\n",
-      __FUNCTION__, Status));
-    ASSERT (FALSE);
-    CpuDeadLoop ();
-  }
-
-  ZeroMem ((VOID *)MapPagesBase, EFI_PAGES_TO_SIZE (MapPagesCount));
-
-  Status = gBS->FreePages (MapPagesBase, MapPagesCount);
-  ASSERT_EFI_ERROR (Status);
 }
 
 /**

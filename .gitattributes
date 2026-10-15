@@ -1,0 +1,5 @@
+# Keep upstream snapshots byte-for-byte, including their original line endings.
+TpmCoreLib/Vendor/** -text
+TpmCoreLib/EdkHeaders/** -text
+*.png binary
+*.aml binary

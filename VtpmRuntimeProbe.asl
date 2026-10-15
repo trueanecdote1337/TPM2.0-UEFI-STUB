@@ -10,7 +10,7 @@ DefinitionBlock ("VtpmRuntimeProbe.aml", "SSDT", 2, "VTPM2 ", "VTPMPROB", 1)
             Name (_STA, 0x0F)
             Name (_STR, Unicode ("Firmware TPM SMM transport probe"))
 
-            // DXE replaces this unique QWord marker with allocated NVS memory.
+            // DXE replaces this unique QWord marker with allocated reserved shared memory.
             OperationRegion (MBXR, SystemMemory, 0xF0E1D2C3B4A59687, 0xA8)
             Field (MBXR, DWordAcc, NoLock, Preserve)
             {

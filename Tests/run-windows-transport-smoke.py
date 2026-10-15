@@ -1,68 +1,37 @@
 #!/usr/bin/env python3
-"""Boot fresh OVMF variables without guest disks; verify two-phase ACPI Control Area staging."""
-from pathlib import Path
-import os
-import shutil
-import subprocess
-import tempfile
+"""Check core, transports, all-CPU SMM rendezvous, and ACPI publication; no Windows disk."""
+from qemu_support import boot, configure, parser, require
 
-base = Path(__file__).resolve().parents[2]
-fv = base / 'Build/OvmfX64/DEBUG_GCC5/FV'
-accel = os.environ.get('VTPM_SMOKE_ACCEL', 'tcg')
-cpus = int(os.environ.get('VTPM_SMOKE_CPUS', '2'))
-for name, cpu, expected in [('windows-transport-smoke', 'max', 'PASS'),
-                            ('windows-no-core', 'max,-rdrand', 'FAIL')]:
-    if accel == 'kvm':
-        cpu = cpu.replace('max', 'host')
-        name += '-kvm'
-    if cpus != 2: name += f'-{cpus}cpu'
-    log = Path(__file__).parent / (name + '.log')
-    with tempfile.TemporaryDirectory(prefix='vtpm-rng-') as tmp:
-        variables = Path(tmp) / 'VARS.fd'
-        shutil.copyfile(fv / 'OVMF_VARS.fd', variables)
-        args = ['qemu-system-x86_64', '-machine', 'q35,smm=on', '-accel', accel,
-                '-cpu', cpu, '-m', '2048', '-smp', str(cpus), '-global',
-                'ICH9-LPC.disable_s3=1', '-global', 'ICH9-LPC.x-smi-broadcast=on', '-display', 'none', '-serial', 'none',
-                '-net', 'none', '-drive',
-                f'if=pflash,format=raw,readonly=on,file={fv}/OVMF_CODE.fd',
-                '-drive', f'if=pflash,format=raw,file={variables}',
-                '-debugcon', f'file:{log}', '-global', 'isa-debugcon.iobase=0x402']
-        process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        for attempt in range(40):
-            try:
-                process.communicate(timeout=1)
-                break
-            except subprocess.TimeoutExpired:
-                if log.exists() and ('PASS: TPM2/MSFT0101 published;' if expected == 'PASS' else 'FAIL: TPM shared-buffer test=5 result=4') in log.read_text(errors='replace'):
-                    break
-        if process.poll() is None:
-            process.terminate()
-            process.communicate(timeout=5)
-    text = log.read_text(errors='replace')
-    print(name)
-    for line in text.splitlines():
-        if '[VTPM-WIN]' in line or '[VTPM-ACPI]' in line or '[VTPM-CTRL]' in line or '[VTPM-CMD]' in line or 'TPM command=' in line or 'TPM shared-buffer' in line or 'through shared buffer' in line or '[VTPM-CRB]' in line or '[VTPM-FULL]' in line or 'FULL command=' in line or 'ASSERT' in line:
-            print(line)
-    assert f'[VTPM-RNG] {expected}: RDRAND source' in text, log
-    assert '[VTPM-CLOCK] PASS: calibrated TSC; mask=0x1F' in text, log
-    assert '[VTPM-PLAT] PASS: platform callbacks; mask=0x1F' in text, log
-    if expected == 'PASS':
-        assert '[VTPM-CMD] PASS: ExecuteCommand; mask=0x3F stage=0' in text, log
-        assert 'SMM core protocol installation: Success' in text, log
-        assert 'PASS: TPM GetCapability through shared buffer' in text, log
-        assert 'PASS: TPM GetRandom through shared buffer' in text, log
-        assert '[VTPM-FULL] PASS: full buffers, TPM errors and bounds verified' in text, log
-        assert '[VTPM-CRB] PASS: diagnostic register model verified' in text, log
-        assert '[VTPM-CTRL] PASS: snapshot, deferred execution and recovery verified' in text, log
-        assert '[VTPM-CTRL] FAIL:' not in text, log
-        assert f'[VTPM-SMI] PASS: all {cpus} CPUs in SMM before timer worker' in text, log
-        assert '[VTPM-WIN] PASS: automatic deferred SMI completion' in text, log
-        assert '[VTPM-WIN] PASS: TPM2/MSFT0101 published;' in text, log
-        assert '[VTPM-WIN] FAIL:' not in text, log
-    else:
-        assert '[VTPM-CMD] FAIL: ExecuteCommand; mask=0x0 stage=3' in text, log
-        assert 'FAIL: TPM shared-buffer test=5 result=4' in text, log
-    assert '[VTPM-CORE] PASS:' in text and '[VTPM-NV] PASS:' in text, log
-    assert 'PASS: shared buffer and bounds checks verified' in text, log
-    assert 'ASSERT' not in text, log
-print('Automatic SMI and ACPI publication passed; guest Windows/TBS verification remains pending')
+
+def main():
+    args = configure(parser(__doc__).parse_args())
+    text = boot(args, 'transport-' + args.accel + '-' + str(args.cpus) + 'cpu',
+                '[VTPM-WIN] PASS: TPM2/MSFT0101 published;')
+    require(text,
+            '[VTPM-CORE] PASS:', '[VTPM-NV] PASS:',
+            '[VTPM-RNG] PASS: RDRAND source',
+            '[VTPM-CLOCK] PASS: calibrated TSC; mask=0x1F',
+            '[VTPM-PLAT] PASS: platform callbacks; mask=0x1F',
+            '[VTPM-CMD] PASS: ExecuteCommand; mask=0x3F stage=0',
+            'SMM core protocol installation: Success',
+            'PASS: shared buffer and bounds checks verified',
+            'PASS: TPM GetCapability through shared buffer',
+            'PASS: TPM GetRandom through shared buffer',
+            '[VTPM-FULL] PASS: full buffers, TPM errors and bounds verified',
+            '[VTPM-CRB] PASS: diagnostic register model verified',
+            '[VTPM-CTRL] PASS: snapshot, deferred execution and recovery verified',
+            '[VTPM-SMI] PASS: all ' + str(args.cpus) + ' CPUs in SMM before timer worker',
+            '[VTPM-WIN] PASS: automatic deferred SMI completion')
+    if '[VTPM-WIN] FAIL:' in text or '[VTPM-CTRL] FAIL:' in text:
+        raise RuntimeError('Unexpected transport failure')
+    text = boot(args, 'no-rdrand-' + args.accel + '-' + str(args.cpus) + 'cpu',
+                'FAIL: TPM shared-buffer test=5 result=4', rdrand=False)
+    require(text, '[VTPM-RNG] FAIL: RDRAND source',
+            '[VTPM-CMD] FAIL: ExecuteCommand; mask=0x0 stage=3')
+    if 'TPM2/MSFT0101 published;' in text:
+        raise RuntimeError('An unavailable core was advertised to the OS')
+    print('Firmware checks passed. Windows/TBS is a separate guest test.')
+
+
+if __name__ == '__main__':
+    main()

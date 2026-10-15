@@ -7,7 +7,8 @@
 #define VTPM_CONTROL_OFFSET 0x5000
 #define VTPM_CONTROL_COMMAND_OFFSET 0x6000
 #define VTPM_CONTROL_RESPONSE_OFFSET 0x7000
-// Diagnostic two-phase entry points, not yet the OS ACPI Start implementation.
+// Tokens 0x53/0x54 are diagnostic two-phase entry points.
+// The OS ACPI Start method uses token 0x55 and automatic timer execution.
 #define VTPM_CONTROL_ACCEPT 0x53
 #define VTPM_CONTROL_EXECUTE 0x54
 #define VTPM_CONTROL_START 0x55

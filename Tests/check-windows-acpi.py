@@ -3,6 +3,7 @@
 from pathlib import Path
 import subprocess
 import tempfile
+import re
 b=Path(__file__).resolve().parents[1]
 with tempfile.TemporaryDirectory(prefix='vtpm-aml-test-') as directory:
     probe=Path(directory)/'WindowsAcpiProbe'
@@ -13,14 +14,16 @@ with tempfile.TemporaryDirectory(prefix='vtpm-aml-test-') as directory:
         str(b/'VtpmRuntimeProbe.aml'), str(b/'VtpmWindows.aml'), str(probe.with_suffix('.aml'))],
         capture_output=True,text=True,timeout=15)
 s=result.stdout+result.stderr
-(b/'Tests/windows-acpi.log').write_text(s)
+log_dir=b/'artifacts/tests'
+log_dir.mkdir(parents=True,exist_ok=True)
+(log_dir/'windows-acpi.log').write_text(s)
 assert result.returncode==0 and 'ACPI Error' not in s and 'ACPI Exception' not in s and 'ACPI Warning' not in s,s
 assert '"MSFT0101"' in s and '[Buffer] Length 0E' in s,s
 # Resource bytes: exactly one Memory32Fixed descriptor (12 bytes) + EndTag.
 assert '00 30 00 00 79 00' in s,s
 assert '47 01 B2 00' not in s,s
-assert '[Buffer] Length 01 =     0000: 03' in s,s
+assert re.search(r'\[Buffer\]\s+Length 01\s*=\s*0000:\s*03\b',s),s
 # Simulated I/O does not produce the A5 SMM ACK: Start must report failure.
 assert '[Integer] = 0000000000000001' in s,s
-assert '[Buffer] Length 01 =     0000: 00' in s,s
+assert re.search(r'\[Buffer\]\s+Length 01\s*=\s*0000:\s*00\b',s),s
 print('Windows AML HID/resources/DSM revision/support/failed-start checks PASS')
